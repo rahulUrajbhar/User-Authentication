@@ -179,7 +179,23 @@ const forgetPassword = async (req, res) => {
   //send mail=>design url
 };
 
-const resetPassword = async (req, res) => {};
+const resetPassword = async (req, res) => {
+  //collect token from params
+  //password from req,body
+  const {token}=req.params
+  const {password}=req.body
+  try {
+   const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: {$gt: Date.now()}
+    })
+    // set password in user
+    //resetToken,Reset Expiry
+    //save
+  } catch (error) {
+    
+  }
+};
 
 export {
   registerUser,
