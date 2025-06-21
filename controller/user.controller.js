@@ -4,7 +4,7 @@ import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { log } from "console";
+
 dotenv.config();
 
 const registerUser = async (req, res) => {
@@ -105,14 +105,13 @@ const userLogin = async (req, res) => {
     });
   }
   try {
-    const user = await User.findOne({email});
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({
         message: "Invalid Email",
       });
     }
-    console.log(user);
-    
+
     const isMatch = bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({
@@ -125,9 +124,9 @@ const userLogin = async (req, res) => {
     });
     const cookieOption = {
       httpOnly: true,
-    //  secure: true, make this true only in prod
+      //  secure: true, make this true only in prod
       maxAge: 24 * 60 * 60 * 1000,
-      sameSite: 'Strict',
+      sameSite: "Strict",
     };
     res.cookie("token", token, cookieOption);
     res.status(200).json({
@@ -141,4 +140,53 @@ const userLogin = async (req, res) => {
   }
 };
 
-export { registerUser, verifyUser, userLogin };
+const getUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+    return res.status(200).json({
+      user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Server Error",
+    });
+  }
+};
+
+const logout = async (req, res) => {
+  try {
+    res.cookie ("token", "", {});
+    return res.status(200).json({
+      message: "User Logout Successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Server Error",
+    });
+  }
+};
+
+const forgetPassword = async (req, res) => {
+  //get email
+  //find user based on email
+  //reset token + reset expiry => Date.now()+10*60*1000
+  //user.save
+  //send mail=>design url
+};
+
+const resetPassword = async (req, res) => {};
+
+export {
+  registerUser,
+  verifyUser,
+  userLogin,
+  getUser,
+  logout,
+  forgetPassword,
+  resetPassword,
+};
